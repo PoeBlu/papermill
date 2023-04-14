@@ -19,7 +19,7 @@ class PapermillExecutePreprocessor(ExecutePreprocessor):
         """
         with self.setup_preprocessor(nb_man.nb, resources, km=km):
             if self.log_output:
-                self.log.info("Executing notebook with kernel: {}".format(self.kernel_name))
+                self.log.info(f"Executing notebook with kernel: {self.kernel_name}")
             nb, resources = self.papermill_process(nb_man, resources)
             info_msg = self._wait_for_reply(self.kc.kernel_info())
             nb.metadata['language_info'] = info_msg['content']['language_info']

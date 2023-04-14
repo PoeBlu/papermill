@@ -111,7 +111,7 @@ class TestCLI(unittest.TestCase):
         kwargs.update(new_kwargs)
         return kwargs
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_parameters(self, execute_patch):
         self.runner.invoke(
             papermill, self.default_args + ['-p', 'foo', 'bar', '--parameters', 'baz', '42']
@@ -120,7 +120,7 @@ class TestCLI(unittest.TestCase):
             **self.augment_execute_kwargs(parameters={'foo': 'bar', 'baz': 42})
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_parameters_raw(self, execute_patch):
         self.runner.invoke(
             papermill, self.default_args + ['-r', 'foo', 'bar', '--parameters_raw', 'baz', '42']
@@ -129,7 +129,7 @@ class TestCLI(unittest.TestCase):
             **self.augment_execute_kwargs(parameters={'foo': 'bar', 'baz': '42'})
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_parameters_file(self, execute_patch):
         self.runner.invoke(
             papermill,
@@ -148,7 +148,7 @@ class TestCLI(unittest.TestCase):
             )
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_parameters_yaml(self, execute_patch):
         self.runner.invoke(
             papermill,
@@ -158,14 +158,14 @@ class TestCLI(unittest.TestCase):
             **self.augment_execute_kwargs(parameters={'foo': 'bar', 'foo2': ['baz']})
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_parameters_yaml_date(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['-y', 'a_date: 2019-01-01'])
         execute_patch.assert_called_with(
             **self.augment_execute_kwargs(parameters={'a_date': '2019-01-01'})
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_parameters_yaml_override(self, execute_patch):
         self.runner.invoke(
             papermill,
@@ -178,7 +178,7 @@ class TestCLI(unittest.TestCase):
             )
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_parameters_base64(self, execute_patch):
         self.runner.invoke(
             papermill,
@@ -194,7 +194,7 @@ class TestCLI(unittest.TestCase):
             **self.augment_execute_kwargs(parameters={'foo': 1, 'bar': 2})
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_parameters_base64_date(self, execute_patch):
         self.runner.invoke(
             papermill, self.default_args + ['--parameters_base64', 'YV9kYXRlOiAyMDE5LTAxLTAx']
@@ -203,21 +203,21 @@ class TestCLI(unittest.TestCase):
             **self.augment_execute_kwargs(parameters={'a_date': '2019-01-01'})
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_inject_input_path(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--inject-input-path'])
         execute_patch.assert_called_with(
             **self.augment_execute_kwargs(parameters={'PAPERMILL_INPUT_PATH': 'input.ipynb'})
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_inject_output_path(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--inject-output-path'])
         execute_patch.assert_called_with(
             **self.augment_execute_kwargs(parameters={'PAPERMILL_OUTPUT_PATH': 'output.ipynb'})
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_inject_paths(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--inject-paths'])
         execute_patch.assert_called_with(
@@ -229,39 +229,39 @@ class TestCLI(unittest.TestCase):
             )
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_engine(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--engine', 'engine-that-could'])
         execute_patch.assert_called_with(
             **self.augment_execute_kwargs(engine_name='engine-that-could')
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_prepare_only(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--prepare-only'])
         execute_patch.assert_called_with(**self.augment_execute_kwargs(prepare_only=True))
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_kernel(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['-k', 'python3'])
         execute_patch.assert_called_with(**self.augment_execute_kwargs(kernel_name='python3'))
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_set_cwd(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--cwd', 'a/path/here'])
         execute_patch.assert_called_with(**self.augment_execute_kwargs(cwd='a/path/here'))
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_progress_bar(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--progress-bar'])
         execute_patch.assert_called_with(**self.augment_execute_kwargs(progress_bar=True))
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_no_progress_bar(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--no-progress-bar'])
         execute_patch.assert_called_with(**self.augment_execute_kwargs(progress_bar=False))
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_log_output(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--log-output'])
         execute_patch.assert_called_with(
@@ -271,55 +271,55 @@ class TestCLI(unittest.TestCase):
             )
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_log_output_plus_progress(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--log-output', '--progress-bar'])
         execute_patch.assert_called_with(
             **self.augment_execute_kwargs(log_output=True, progress_bar=True)
         )
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_no_log_output(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--no-log-output'])
         execute_patch.assert_called_with(**self.augment_execute_kwargs(log_output=False))
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_log_level(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--log-level', 'WARNING'])
         # TODO: this does not actually test log-level being set
         execute_patch.assert_called_with(**self.augment_execute_kwargs())
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_start_timeout(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--start-timeout', '123'])
         execute_patch.assert_called_with(**self.augment_execute_kwargs(start_timeout=123))
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_start_timeout_backwards_compatibility(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--start_timeout', '123'])
         execute_patch.assert_called_with(**self.augment_execute_kwargs(start_timeout=123))
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_execution_timeout(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--execution-timeout', '123'])
         execute_patch.assert_called_with(**self.augment_execute_kwargs(execution_timeout=123))
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_report_mode(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--report-mode'])
         execute_patch.assert_called_with(**self.augment_execute_kwargs(report_mode=True))
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_no_report_mode(self, execute_patch):
         self.runner.invoke(papermill, self.default_args + ['--no-report-mode'])
         execute_patch.assert_called_with(**self.augment_execute_kwargs(report_mode=False))
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_version(self, execute_patch):
         self.runner.invoke(papermill, ['--version'])
         execute_patch.assert_not_called()
 
-    @patch(cli.__name__ + '.execute_notebook')
+    @patch(f'{cli.__name__}.execute_notebook')
     def test_many_args(self, execute_patch):
         self.runner.invoke(
             papermill,
@@ -389,9 +389,7 @@ def papermill_version():
     try:
         proc = papermill_cli(['--version'], stdout=subprocess.PIPE)
         out, _ = proc.communicate()
-        if proc.returncode:
-            return None
-        return out.decode('utf-8')
+        return None if proc.returncode else out.decode('utf-8')
     except (OSError, SystemExit):  # pragma: no cover
         return None
 
@@ -406,7 +404,9 @@ def notebook():
         return nbformat.v4.new_notebook(
             metadata=metadata,
             cells=[
-                nbformat.v4.new_markdown_cell('This is a notebook with kernel: ' + ks.display_name)
+                nbformat.v4.new_markdown_cell(
+                    f'This is a notebook with kernel: {ks.display_name}'
+                )
             ],
         )
 

@@ -50,16 +50,16 @@ class TestPapermillIO(unittest.TestCase):
             self.ver = ver
 
         def read(self, path):
-            return "contents from {} for version {}".format(path, self.ver)
+            return f"contents from {path} for version {self.ver}"
 
         def listdir(self, path):
             return ["fake", "contents"]
 
         def write(self, buf, path):
-            return "wrote {}".format(buf)
+            return f"wrote {buf}"
 
         def pretty_path(self, path):
-            return "{}/pretty/{}".format(path, self.ver)
+            return f"{path}/pretty/{self.ver}"
 
     class FakeByteHandler(object):
         def __init__(self, ver):
@@ -74,10 +74,10 @@ class TestPapermillIO(unittest.TestCase):
             return ["fake", "contents"]
 
         def write(self, buf, path):
-            return "wrote {}".format(buf)
+            return f"wrote {buf}"
 
         def pretty_path(self, path):
-            return "{}/pretty/{}".format(path, self.ver)
+            return f"{path}/pretty/{self.ver}"
 
     def setUp(self):
         self.papermill_io = PapermillIO()
@@ -299,7 +299,7 @@ class TestHttpHandler(unittest.TestCase):
         with self.assertRaises(PapermillException) as e:
             HttpHandler.listdir('http://example.com')
 
-        self.assertEqual('{}'.format(e.exception), 'listdir is not supported by HttpHandler')
+        self.assertEqual(f'{e.exception}', 'listdir is not supported by HttpHandler')
 
     def test_read(self):
         """

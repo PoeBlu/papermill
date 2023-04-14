@@ -66,7 +66,7 @@ author = 'nteract team'
 import papermill
 
 # The short X.Y version.
-version = '.'.join(papermill.__version__.split('.')[0:2])
+version = '.'.join(papermill.__version__.split('.')[:2])
 
 # The full version, including alpha/beta/rc tags.
 release = papermill.__version__

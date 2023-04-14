@@ -19,28 +19,28 @@ class AzureBlobStore(object):
 
     def _blob_service_client(self, account_name, sas_token):
 
-        blob_service_client = BlobServiceClient(
-            "{account}.blob.core.windows.net".format(account=account_name), sas_token
+        return BlobServiceClient(
+            "{account}.blob.core.windows.net".format(account=account_name),
+            sas_token,
         )
-        return blob_service_client
 
     @classmethod
-    def _split_url(self, url):
+    def _split_url(cls, url):
         """
         see: https://docs.microsoft.com/en-us/azure/storage/common/storage-dotnet-shared-access-signature-part-1  # noqa: E501
         abs://myaccount.blob.core.windows.net/sascontainer/sasblob.txt?sastoken
         """
-        match = re.match(r"abs://(.*)\.blob\.core\.windows\.net\/(.*)\/(.*)\?(.*)$", url)
-        if not match:
-            raise Exception("Invalid azure blob url '{0}'".format(url))
-        else:
-            params = {
-                "account": match.group(1),
-                "container": match.group(2),
-                "blob": match.group(3),
-                "sas_token": match.group(4),
+        if match := re.match(
+            r"abs://(.*)\.blob\.core\.windows\.net\/(.*)\/(.*)\?(.*)$", url
+        ):
+            return {
+                "account": match[1],
+                "container": match[2],
+                "blob": match[3],
+                "sas_token": match[4],
             }
-            return params
+        else:
+            raise Exception("Invalid azure blob url '{0}'".format(url))
 
     def read(self, url):
         """Read storage at a given url"""

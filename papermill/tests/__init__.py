@@ -7,10 +7,7 @@ try:
 except ImportError:
     from io import StringIO
 
-if six.PY2:
-    kernel_name = 'python2'
-else:
-    kernel_name = 'python3'
+kernel_name = 'python2' if six.PY2 else 'python3'
 
 
 def get_notebook_path(*args):

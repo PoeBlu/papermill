@@ -28,7 +28,7 @@ def add_builtin_parameters(parameters):
     }
 
     if parameters is not None:
-        with_builtin_parameters.update(parameters)
+        with_builtin_parameters |= parameters
 
     return with_builtin_parameters
 
@@ -49,7 +49,7 @@ def parameterize_path(path, parameters):
     try:
         return path.format(**parameters)
     except KeyError as key_error:
-        raise PapermillMissingParameterException("Missing parameter {}".format(key_error))
+        raise PapermillMissingParameterException(f"Missing parameter {key_error}")
 
 
 def parameterize_notebook(nb, parameters, report_mode=False):
@@ -107,10 +107,7 @@ def parameterize_notebook(nb, parameters, report_mode=False):
 
 
 def _find_first_tagged_cell_index(nb, tag):
-    parameters_indices = []
-    for idx, cell in enumerate(nb.cells):
-        if tag in cell.metadata.tags:
-            parameters_indices.append(idx)
-    if not parameters_indices:
-        return -1
-    return parameters_indices[0]
+    parameters_indices = [
+        idx for idx, cell in enumerate(nb.cells) if tag in cell.metadata.tags
+    ]
+    return parameters_indices[0] if parameters_indices else -1

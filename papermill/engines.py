@@ -39,10 +39,10 @@ class PapermillEngines(object):
 
     def get_engine(self, name=None):
         """Retrieves an engine by name."""
-        engine = self._engines.get(name)
-        if not engine:
-            raise PapermillException("No engine named '{}' found".format(name))
-        return engine
+        if engine := self._engines.get(name):
+            return engine
+        else:
+            raise PapermillException(f"No engine named '{name}' found")
 
     def execute_notebook_with_engine(self, engine_name, nb, kernel_name, **kwargs):
         """Fetch a named engine and execute the nb object against it."""
@@ -340,9 +340,9 @@ class Engine(object):
 
         nb_man.notebook_start()
         try:
-            nb = cls.execute_managed_notebook(nb_man, kernel_name, log_output=log_output, **kwargs)
-            # Update the notebook object in case the executor didn't do it for us
-            if nb:
+            if nb := cls.execute_managed_notebook(
+                nb_man, kernel_name, log_output=log_output, **kwargs
+            ):
                 nb_man.nb = nb
         finally:
             nb_man.cleanup_pbar()

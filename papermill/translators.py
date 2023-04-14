@@ -22,17 +22,15 @@ class PapermillTranslators(object):
         elif language in self._translators:
             return self._translators[language]
         raise PapermillException(
-            "No parameter translator functions specified for kernel '{}' or language '{}'".format(
-                kernel_name, language
-            )
+            f"No parameter translator functions specified for kernel '{kernel_name}' or language '{language}'"
         )
 
 
 class Translator(object):
     @classmethod
-    def translate_raw_str(csl, val):
+    def translate_raw_str(cls, val):
         """Reusable by most interpreters"""
-        return '{}'.format(val)
+        return f'{val}'
 
     @classmethod
     def translate_escaped_str(cls, str_val):
@@ -42,7 +40,7 @@ class Translator(object):
             if sys.version_info >= (3, 0):
                 str_val = str_val.decode('utf-8')
             str_val = str_val.replace('"', r'\"')
-        return '"{}"'.format(str_val)
+        return f'"{str_val}"'
 
     @classmethod
     def translate_str(cls, val):
@@ -71,11 +69,11 @@ class Translator(object):
 
     @classmethod
     def translate_dict(cls, val):
-        raise NotImplementedError('dict type translation not implemented for {}'.format(cls))
+        raise NotImplementedError(f'dict type translation not implemented for {cls}')
 
     @classmethod
     def translate_list(cls, val):
-        raise NotImplementedError('list type translation not implemented for {}'.format(cls))
+        raise NotImplementedError(f'list type translation not implemented for {cls}')
 
     @classmethod
     def translate(cls, val):
@@ -100,17 +98,17 @@ class Translator(object):
 
     @classmethod
     def comment(cls, cmt_str):
-        raise NotImplementedError('comment translation not implemented for {}'.format(cls))
+        raise NotImplementedError(f'comment translation not implemented for {cls}')
 
     @classmethod
     def assign(cls, name, str_val):
-        return '{} = {}'.format(name, str_val)
+        return f'{name} = {str_val}'
 
     @classmethod
     def codify(cls, parameters):
-        content = '{}\n'.format(cls.comment('Parameters'))
+        content = f"{cls.comment('Parameters')}\n"
         for name, val in parameters.items():
-            content += '{}\n'.format(cls.assign(name, cls.translate(val)))
+            content += f'{cls.assign(name, cls.translate(val))}\n'
         return content
 
 
@@ -122,18 +120,18 @@ class PythonTranslator(Translator):
     @classmethod
     def translate_dict(cls, val):
         escaped = ', '.join(
-            ["{}: {}".format(cls.translate_str(k), cls.translate(v)) for k, v in val.items()]
+            [f"{cls.translate_str(k)}: {cls.translate(v)}" for k, v in val.items()]
         )
         return '{{{}}}'.format(escaped)
 
     @classmethod
     def translate_list(cls, val):
         escaped = ', '.join([cls.translate(v) for v in val])
-        return '[{}]'.format(escaped)
+        return f'[{escaped}]'
 
     @classmethod
     def comment(cls, cmt_str):
-        return '# {}'.format(cmt_str).strip()
+        return f'# {cmt_str}'.strip()
 
     @classmethod
     def codify(cls, parameters):
@@ -159,54 +157,60 @@ class RTranslator(Translator):
     @classmethod
     def translate_dict(cls, val):
         escaped = ', '.join(
-            ['{} = {}'.format(cls.translate_str(k), cls.translate(v)) for k, v in val.items()]
+            [
+                f'{cls.translate_str(k)} = {cls.translate(v)}'
+                for k, v in val.items()
+            ]
         )
-        return 'list({})'.format(escaped)
+        return f'list({escaped})'
 
     @classmethod
     def translate_list(cls, val):
         escaped = ', '.join([cls.translate(v) for v in val])
-        return 'list({})'.format(escaped)
+        return f'list({escaped})'
 
     @classmethod
     def comment(cls, cmt_str):
-        return '# {}'.format(cmt_str).strip()
+        return f'# {cmt_str}'.strip()
 
     @classmethod
     def assign(cls, name, str_val):
         # Leading '_' aren't legal R variable names -- so we drop them when injecting
         while name.startswith("_"):
             name = name[1:]
-        return '{} = {}'.format(name, str_val)
+        return f'{name} = {str_val}'
 
 
 class ScalaTranslator(Translator):
     @classmethod
     def translate_int(cls, val):
         strval = cls.translate_raw_str(val)
-        return strval + "L" if (val > 2147483647 or val < -2147483648) else strval
+        return f"{strval}L" if (val > 2147483647 or val < -2147483648) else strval
 
     @classmethod
     def translate_dict(cls, val):
         """Translate dicts to scala Maps"""
         escaped = ', '.join(
-            ["{} -> {}".format(cls.translate_str(k), cls.translate(v)) for k, v in val.items()]
+            [
+                f"{cls.translate_str(k)} -> {cls.translate(v)}"
+                for k, v in val.items()
+            ]
         )
-        return 'Map({})'.format(escaped)
+        return f'Map({escaped})'
 
     @classmethod
     def translate_list(cls, val):
         """Translate list to scala Seq"""
         escaped = ', '.join([cls.translate(v) for v in val])
-        return 'Seq({})'.format(escaped)
+        return f'Seq({escaped})'
 
     @classmethod
     def comment(cls, cmt_str):
-        return '// {}'.format(cmt_str).strip()
+        return f'// {cmt_str}'.strip()
 
     @classmethod
     def assign(cls, name, str_val):
-        return 'val {} = {}'.format(name, str_val)
+        return f'val {name} = {str_val}'
 
 
 class JuliaTranslator(Translator):
@@ -217,18 +221,21 @@ class JuliaTranslator(Translator):
     @classmethod
     def translate_dict(cls, val):
         escaped = ', '.join(
-            ["{} => {}".format(cls.translate_str(k), cls.translate(v)) for k, v in val.items()]
+            [
+                f"{cls.translate_str(k)} => {cls.translate(v)}"
+                for k, v in val.items()
+            ]
         )
-        return 'Dict({})'.format(escaped)
+        return f'Dict({escaped})'
 
     @classmethod
     def translate_list(cls, val):
         escaped = ', '.join([cls.translate(v) for v in val])
-        return '[{}]'.format(escaped)
+        return f'[{escaped}]'
 
     @classmethod
     def comment(cls, cmt_str):
-        return '# {}'.format(cmt_str).strip()
+        return f'# {cmt_str}'.strip()
 
 
 class MatlabTranslator(Translator):
@@ -240,7 +247,7 @@ class MatlabTranslator(Translator):
             if sys.version_info >= (3, 0):
                 str_val = str_val.decode('utf-8')
             str_val = str_val.replace('"', '""')
-        return '"{}"'.format(str_val)
+        return f'"{str_val}"'
 
     @staticmethod
     def __translate_char_array(str_val):
@@ -250,7 +257,7 @@ class MatlabTranslator(Translator):
             if sys.version_info >= (3, 0):
                 str_val = str_val.decode('utf-8')
             str_val = str_val.replace('\'', '\'\'')
-        return '\'{}\''.format(str_val)
+        return f"\'{str_val}\'"
 
     @classmethod
     def translate_none(cls, val):
@@ -258,8 +265,8 @@ class MatlabTranslator(Translator):
 
     @classmethod
     def translate_dict(cls, val):
-        keys = ', '.join(["{}".format(cls.__translate_char_array(k)) for k, v in val.items()])
-        vals = ', '.join(["{}".format(cls.translate(v)) for k, v in val.items()])
+        keys = ', '.join([f"{cls.__translate_char_array(k)}" for k, v in val.items()])
+        vals = ', '.join([f"{cls.translate(v)}" for k, v in val.items()])
         return 'containers.Map({{{}}}, {{{}}})'.format(keys, vals)
 
     @classmethod
@@ -269,13 +276,13 @@ class MatlabTranslator(Translator):
 
     @classmethod
     def comment(cls, cmt_str):
-        return '% {}'.format(cmt_str).strip()
+        return f'% {cmt_str}'.strip()
 
     @classmethod
     def codify(cls, parameters):
-        content = '{}\n'.format(cls.comment('Parameters'))
+        content = f"{cls.comment('Parameters')}\n"
         for name, val in parameters.items():
-            content += '{};\n'.format(cls.assign(name, cls.translate(val)))
+            content += f'{cls.assign(name, cls.translate(val))};\n'
         return content
 
 
@@ -292,7 +299,7 @@ class CSharpTranslator(Translator):
     @classmethod
     def translate_int(cls, val):
         strval = cls.translate_raw_str(val)
-        return strval + "L" if (val > 2147483647 or val < -2147483648) else strval
+        return f"{strval}L" if (val > 2147483647 or val < -2147483648) else strval
 
     @classmethod
     def translate_dict(cls, val):
@@ -311,11 +318,11 @@ class CSharpTranslator(Translator):
 
     @classmethod
     def comment(cls, cmt_str):
-        return '// {}'.format(cmt_str).strip()
+        return f'// {cmt_str}'.strip()
 
     @classmethod
     def assign(cls, name, str_val):
-        return 'var {} = {};'.format(name, str_val)
+        return f'var {name} = {str_val};'
 
 
 class FSharpTranslator(Translator):
@@ -330,30 +337,30 @@ class FSharpTranslator(Translator):
     @classmethod
     def translate_int(cls, val):
         strval = cls.translate_raw_str(val)
-        return strval + "L" if (val > 2147483647 or val < -2147483648) else strval
+        return f"{strval}L" if (val > 2147483647 or val < -2147483648) else strval
 
     @classmethod
     def translate_dict(cls, val):
         tuples = '; '.join(
             [
-                "({}, {} :> IComparable)".format(cls.translate_str(k), cls.translate(v))
+                f"({cls.translate_str(k)}, {cls.translate(v)} :> IComparable)"
                 for k, v in val.items()
             ]
         )
-        return '[ {} ] |> Map.ofList'.format(tuples)
+        return f'[ {tuples} ] |> Map.ofList'
 
     @classmethod
     def translate_list(cls, val):
         escaped = '; '.join([cls.translate(v) for v in val])
-        return '[ {} ]'.format(escaped)
+        return f'[ {escaped} ]'
 
     @classmethod
     def comment(cls, cmt_str):
-        return '(* {} *)'.format(cmt_str).strip()
+        return f'(* {cmt_str} *)'.strip()
 
     @classmethod
     def assign(cls, name, str_val):
-        return 'let {} = {}'.format(name, str_val)
+        return f'let {name} = {str_val}'
 
 
 # Instantiate a PapermillIO instance and register Handlers.

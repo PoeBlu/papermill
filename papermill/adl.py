@@ -21,11 +21,10 @@ class ADL(object):
 
     @classmethod
     def _split_url(cls, url):
-        match = re.match(r'adl://(.*)\.azuredatalakestore\.net\/(.*)$', url)
-        if not match:
-            raise Exception("Invalid ADL url '{0}'".format(url))
+        if match := re.match(r'adl://(.*)\.azuredatalakestore\.net\/(.*)$', url):
+            return match[1], match[2]
         else:
-            return (match.group(1), match.group(2))
+            raise Exception("Invalid ADL url '{0}'".format(url))
 
     def _get_token(self):
         if self.token is None:
@@ -52,8 +51,7 @@ class ADL(object):
         adapter = self._create_adapter(store_name)
         lines = []
         with adapter.open(path) as f:
-            for line in f:
-                lines.append(line.decode())
+            lines.extend(line.decode() for line in f)
         return lines
 
     def write(self, buf, url):

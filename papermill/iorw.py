@@ -87,13 +87,14 @@ class PapermillIO(object):
 
         if not fnmatch.fnmatch(os.path.basename(path).split('?')[0], '*.*'):
             warnings.warn(
-                "the file is not specified with any extension : " + os.path.basename(path)
+                f"the file is not specified with any extension : {os.path.basename(path)}"
             )
         elif not any(
-            fnmatch.fnmatch(os.path.basename(path).split('?')[0], '*' + ext) for ext in extensions
+            fnmatch.fnmatch(os.path.basename(path).split('?')[0], f'*{ext}')
+            for ext in extensions
         ):
             warnings.warn(
-                "The specified input file ({}) does not end in one of {}".format(path, extensions)
+                f"The specified input file ({path}) does not end in one of {extensions}"
             )
         # Handle https://github.com/nteract/papermill/issues/317
         notebook_metadata = self.get_handler(path).read(path)
@@ -114,13 +115,14 @@ class PapermillIO(object):
         # Usually no return object here
         if not fnmatch.fnmatch(os.path.basename(path).split('?')[0], '*.*'):
             warnings.warn(
-                "the file is not specified with any extension : " + os.path.basename(path)
+                f"the file is not specified with any extension : {os.path.basename(path)}"
             )
         elif not any(
-            fnmatch.fnmatch(os.path.basename(path).split('?')[0], '*' + ext) for ext in extensions
+            fnmatch.fnmatch(os.path.basename(path).split('?')[0], f'*{ext}')
+            for ext in extensions
         ):
             warnings.warn(
-                "The specified input file ({}) does not end in one of {}".format(path, extensions)
+                f"The specified input file ({path}) does not end in one of {extensions}"
             )
         return self.get_handler(path).write(buf, path)
 
@@ -153,7 +155,7 @@ class PapermillIO(object):
 
         if local_handler is None:
             raise PapermillException(
-                "Could not find a registered schema handler for: {}".format(path)
+                f"Could not find a registered schema handler for: {path}"
             )
 
         return local_handler
@@ -205,7 +207,7 @@ class LocalHandler(object):
         with chdir(self._cwd):
             dirname = os.path.dirname(path)
             if dirname and not os.path.exists(dirname):
-                raise FileNotFoundError("output folder {} doesn't exist.".format(dirname))
+                raise FileNotFoundError(f"output folder {dirname} doesn't exist.")
             with io.open(path, 'w', encoding="utf-8") as f:
                 f.write(buf)
 
@@ -383,8 +385,8 @@ def load_notebook_node(notebook_path):
 
     if not hasattr(nb.metadata, 'papermill'):
         nb.metadata['papermill'] = {
-            'parameters': dict(),
-            'environment_variables': dict(),
+            'parameters': {},
+            'environment_variables': {},
             'version': __version__,
         }
 
@@ -393,7 +395,7 @@ def load_notebook_node(notebook_path):
             cell.metadata['tags'] = []  # Create tags attr if one doesn't exist.
 
         if not hasattr(cell.metadata, 'papermill'):
-            cell.metadata['papermill'] = dict()
+            cell.metadata['papermill'] = {}
     return nb
 
 

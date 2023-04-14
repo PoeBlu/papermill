@@ -63,7 +63,7 @@ class Prefix(object):
         self.service = service
 
     def __str__(self):
-        return 's3://{}/{}'.format(self.bucket.name, self.name)
+        return f's3://{self.bucket.name}/{self.name}'
 
     def __repr__(self):
         return self.__str__()
@@ -116,7 +116,7 @@ class Key(object):
         self.service = service
 
     def __str__(self):
-        return 's3://{}/{}'.format(self.bucket.name, self.name)
+        return f's3://{self.bucket.name}/{self.name}'
 
     def __repr__(self):
         return self.__str__()
@@ -151,8 +151,7 @@ class S3(object):
                 client = session.client('s3')
 
                 session_params = {}
-                endpoint_url = os.environ.get('BOTO3_ENDPOINT_URL', None)
-                if endpoint_url:
+                if endpoint_url := os.environ.get('BOTO3_ENDPOINT_URL', None):
                     session_params['endpoint_url'] = endpoint_url
 
                 s3 = session.resource('s3', **session_params)
@@ -165,13 +164,11 @@ class S3(object):
 
     def _clean(self, name):
         if name.startswith('s3n:'):
-            name = 's3:' + name[4:]
-        if self._is_s3(name):
-            return name[5:]
-        return name
+            name = f's3:{name[4:]}'
+        return name[5:] if self._is_s3(name) else name
 
     def _clean_s3(self, name):
-        return 's3:' + name[4:] if name.startswith('s3n:') else name
+        return f's3:{name[4:]}' if name.startswith('s3n:') else name
 
     def _get_key(self, name):
         if isinstance(name, Key):
@@ -209,13 +206,12 @@ class S3(object):
         page_iterator = paginator.paginate(**operation_parameters)
 
         def sort(item):
-            if 'Key' in item:
-                return item['Key']
-            return item['Prefix']
+            return item['Key'] if 'Key' in item else item['Prefix']
 
         for page in page_iterator:
             locations = sorted(
-                [i for i in page.get('Contents', []) + page.get('CommonPrefixes', [])], key=sort
+                list(page.get('Contents', []) + page.get('CommonPrefixes', [])),
+                key=sort,
             )
 
             for item in locations:
@@ -285,18 +281,18 @@ class S3(object):
         """
         assert self._is_s3(source) or isinstance(source, Key), 'source must be a valid s3 path'
 
-        key = self._get_key(source) if not isinstance(source, Key) else source
+        key = source if isinstance(source, Key) else self._get_key(source)
         compressed = (compressed or key.name.endswith('.gz')) and not raw
         if compressed:
             decompress = zlib.decompressobj(16 + zlib.MAX_WBITS)
 
         size = 0
-        bytes_read = 0
         err = None
         undecoded = ''
         if key:
+            bytes_read = 0
             # try to read the file multiple times
-            for i in range(100):
+            for _ in range(100):
                 obj = self.s3.Object(key.bucket.name, key.name)
                 buffersize = buffersize if buffersize is not None else 2 ** 20
 
@@ -305,21 +301,18 @@ class S3(object):
                 elif size != obj.content_length:
                     raise AwsError('key size unexpectedly changed while reading')
 
-                r = obj.get(Range="bytes={}-".format(bytes_read))
+                r = obj.get(Range=f"bytes={bytes_read}-")
 
                 try:
                     while bytes_read < size:
                         # this making this weird check because this call is
                         # about 100 times slower if the amt is too high
-                        if size - bytes_read > buffersize:
-                            bytes = r['Body'].read(amt=buffersize)
-                        else:
-                            bytes = r['Body'].read()
-                        if compressed:
-                            s = decompress.decompress(bytes)
-                        else:
-                            s = bytes
-
+                        bytes = (
+                            r['Body'].read(amt=buffersize)
+                            if size - bytes_read > buffersize
+                            else r['Body'].read()
+                        )
+                        s = decompress.decompress(bytes) if compressed else bytes
                         if encoding and not raw:
                             try:
                                 decoded = undecoded + s.decode(encoding)
@@ -341,8 +334,6 @@ class S3(object):
                     raise
                 except Exception:
                     err = True
-                    pass
-
                 if size <= bytes_read:
                     break
 
@@ -350,14 +341,12 @@ class S3(object):
                 if err:
                     raise Exception
                 else:
-                    raise AwsError('Failed to fully read [%s]' % source.name)
+                    raise AwsError(f'Failed to fully read [{source.name}]')
 
             if undecoded:
                 assert encoding is not None  # only time undecoded is set
 
-                # allow exception to be raised if one is thrown
-                decoded = undecoded.decode(encoding)
-                yield decoded
+                yield undecoded.decode(encoding)
 
     def cp_string(self, source, dest, **kwargs):
         """
@@ -437,13 +426,9 @@ class S3(object):
             buf += block
             if '\n' in buf:
                 ret, buf = buf.rsplit('\n', 1)
-                for line in ret.split('\n'):
-                    yield line
-
+                yield from ret.split('\n')
         lines = buf.split('\n')
-        for line in lines[:-1]:
-            yield line
-
+        yield from lines[:-1]
         # only yield the last line if the line has content in it
         if lines[-1]:
             yield lines[-1]

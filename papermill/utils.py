@@ -29,10 +29,11 @@ def merge_kwargs(caller_args, **callee_args):
     args : dict
        Merged arguments
     """
-    conflicts = set(caller_args) & set(callee_args)
-    if conflicts:
-        args = format('; '.join(['{}={}'.format(key, value) for key, value in callee_args.items()]))
-        msg = "Callee will overwrite caller's argument(s): {}".format(args)
+    if conflicts := set(caller_args) & set(callee_args):
+        args = format(
+            '; '.join([f'{key}={value}' for key, value in callee_args.items()])
+        )
+        msg = f"Callee will overwrite caller's argument(s): {args}"
         warnings.warn(msg, PapermillParameterOverwriteWarning)
     return dict(caller_args, **callee_args)
 
@@ -52,9 +53,7 @@ def remove_args(args=None, **kwargs):
     kwargs : dict
        New dictionary of arguments
     """
-    if not args:
-        return kwargs
-    return {k: v for k, v in kwargs.items() if k not in args}
+    return {k: v for k, v in kwargs.items() if k not in args} if args else kwargs
 
 
 # retry decorator
